@@ -1,6 +1,6 @@
 {
   "name": "@mggarofalo/eslint-plugin-react-hook-stability",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "ESLint plugin to detect unstable references returned from React hooks",
   "type": "module",
   "main": "dist/index.js",
