@@ -1,0 +1,56 @@
+{
+  "name": "@mggarofalo/eslint-plugin-react-hook-stability",
+  "version": "0.1.0",
+  "description": "ESLint plugin to detect unstable references returned from React hooks",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mggarofalo/eslint-plugins.git",
+    "directory": "packages/eslint-plugin-react-hook-stability"
+  },
+  "homepage": "https://github.com/mggarofalo/eslint-plugins/tree/main/packages/eslint-plugin-react-hook-stability",
+  "bugs": {
+    "url": "https://github.com/mggarofalo/eslint-plugins/issues"
+  },
+  "peerDependencies": {
+    "eslint": ">=9.0.0"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "^8.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/rule-tester": "^8.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.0.0"
+  },
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "react",
+    "hooks",
+    "useCallback",
+    "useMemo",
+    "stability"
+  ],
+  "license": "MIT"
+}
