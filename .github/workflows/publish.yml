@@ -36,7 +36,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          registry-url: https://registry.npmjs.org
+
+      - run: npm install -g npm@latest
 
       - run: npm ci
 
@@ -45,5 +46,3 @@ jobs:
       - run: npm test -w packages/${{ needs.resolve-package.outputs.package }}
 
       - run: npm publish -w packages/${{ needs.resolve-package.outputs.package }} --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
