@@ -49,9 +49,22 @@ Scope to the package when relevant: `feat(react-hook-stability): add new rule`
 - **ESLint 9** flat config (the plugins target ESLint 9+)
 - 2-space indentation, LF line endings
 
+## Releasing
+
+Each package is released independently via GitHub Releases with scoped tags:
+
+- `react-hook-stability-v0.1.0` → publishes `@mggarofalo/eslint-plugin-react-hook-stability@0.1.0`
+
+Steps:
+1. Update the version in the package's `package.json`
+2. Commit: `chore(react-hook-stability): release v0.1.0`
+3. Create a GitHub Release with tag `react-hook-stability-v0.1.0`
+4. The publish workflow detects the tag prefix and publishes the matching package
+
 ## Adding a New Package
 
 1. Create `packages/<package-name>/` with `package.json`, `tsconfig.json`, `src/`, `tests/`
 2. Scope the package: `@mggarofalo/<package-name>`
-3. Add the package name to the CI/publish workflow matrices in `.github/workflows/`
-4. Run `npm install` from the repo root to link the workspace
+3. Add the package name to the CI workflow matrix in `.github/workflows/ci.yml`
+4. Add a tag-prefix mapping in the `resolve-package` job in `.github/workflows/publish.yml`
+5. Run `npm install` from the repo root to link the workspace
