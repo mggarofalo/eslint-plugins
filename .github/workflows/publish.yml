@@ -45,5 +45,3 @@ jobs:
       - run: npm test -w packages/${{ needs.resolve-package.outputs.package }}
 
       - run: npm publish -w packages/${{ needs.resolve-package.outputs.package }} --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
