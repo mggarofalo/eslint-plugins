@@ -51,15 +51,24 @@ Scope to the package when relevant: `feat(react-hook-stability): add new rule`
 
 ## Releasing
 
-Each package is released independently via GitHub Releases with scoped tags:
+Each package is released independently via GitHub Releases with scoped tags.
 
-- `react-hook-stability-v0.1.0` → publishes `@mggarofalo/eslint-plugin-react-hook-stability@0.1.0`
+Use the release script:
 
-Steps:
-1. Update the version in the package's `package.json`
-2. Commit: `chore(react-hook-stability): release v0.1.0`
-3. Create a GitHub Release with tag `react-hook-stability-v0.1.0`
-4. The publish workflow detects the tag prefix and publishes the matching package
+```bash
+./scripts/release.sh <package-short-name> <version>
+# Example: ./scripts/release.sh react-hook-stability 0.2.0
+```
+
+The script:
+1. Bumps the version in the package's `package.json`
+2. Updates `package-lock.json`
+3. Commits: `chore(<short-name>): release v<version>`
+4. Pushes to `main`
+5. Creates a GitHub Release with tag `<short-name>-v<version>`
+6. The publish workflow detects the tag prefix and publishes the matching package
+
+Tag convention: `react-hook-stability-v0.1.0` → publishes `@mggarofalo/eslint-plugin-react-hook-stability@0.1.0`
 
 ## Adding a New Package
 
