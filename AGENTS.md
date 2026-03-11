@@ -56,8 +56,8 @@ Each package is released independently via GitHub Releases with scoped tags.
 Use the release script:
 
 ```bash
-./scripts/release.sh <package-short-name> <version>
-# Example: ./scripts/release.sh react-hook-stability 0.2.0
+python scripts/release.py <package-short-name> <version>
+# Example: python scripts/release.py react-hook-stability 0.2.0
 ```
 
 The script:
