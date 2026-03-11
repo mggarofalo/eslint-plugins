@@ -51,22 +51,26 @@ def main() -> None:
     # Read package name from package.json
     pkg_json = json.loads((package_dir / "package.json").read_text())
     package_name = pkg_json["name"]
+    current_version = pkg_json["version"]
 
     print(f"Releasing {package_name}@{version} (tag: {tag})")
     print()
 
-    # Bump version in package.json
-    run(["npm", "version", version, "--no-git-tag-version", "-w", str(package_dir)])
+    if current_version == version:
+        print(f"Version already set to {version}, skipping bump.")
+    else:
+        # Bump version in package.json
+        run(["npm", "version", version, "--no-git-tag-version", "-w", str(package_dir)])
 
-    # Update package-lock.json
-    run(["npm", "install", "--package-lock-only"])
+        # Update package-lock.json
+        run(["npm", "install", "--package-lock-only"])
 
-    # Commit the version bump
-    run(["git", "add", f"{package_dir}/package.json", "package-lock.json"])
-    run(["git", "commit", "-m", f"chore({short_name}): release v{version}"])
+        # Commit the version bump
+        run(["git", "add", f"{package_dir}/package.json", "package-lock.json"])
+        run(["git", "commit", "-m", f"chore({short_name}): release v{version}"])
 
-    # Push the commit
-    run(["git", "push"])
+        # Push the commit
+        run(["git", "push"])
 
     # Create GitHub release (triggers publish workflow)
     run([
