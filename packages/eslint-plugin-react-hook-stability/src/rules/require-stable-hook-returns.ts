@@ -28,7 +28,7 @@ const createRule = ESLintUtils.RuleCreator(
     "https://github.com/mggarofalo/eslint-plugins/tree/main/packages/eslint-plugin-react-hook-stability#require-stable-hook-returns",
 );
 
-type MessageIds = "unstableReturn";
+type MessageIds = "unstableReturn" | "unstableArrayReturn" | "unstableObjectReturn";
 
 export const rule = createRule<[], MessageIds>({
   name: "require-stable-hook-returns",
@@ -43,6 +43,10 @@ export const rule = createRule<[], MessageIds>({
     messages: {
       unstableReturn:
         'Hook "{{hookName}}" returns unstable {{kind}} "{{propName}}". Wrap it in {{wrapper}}.',
+      unstableArrayReturn:
+        'Hook "{{hookName}}" returns an unstable array. Wrap it in useMemo.',
+      unstableObjectReturn:
+        'Hook "{{hookName}}" returns an unstable object literal. Wrap the return value in useMemo.',
     },
   },
   defaultOptions: [],
@@ -274,6 +278,54 @@ export const rule = createRule<[], MessageIds>({
       }
     }
 
+    function reportUnstableArray(
+      originNode: TSESTree.Node,
+      scope: HookScope,
+    ): void {
+      context.report({
+        node: originNode,
+        messageId: "unstableArrayReturn",
+        data: { hookName: scope.name },
+        fix(fixer) {
+          const fixes: ReturnType<typeof fixer.replaceText>[] = [];
+          const originText = sourceCode.getText(originNode);
+          fixes.push(
+            fixer.replaceText(
+              originNode,
+              `useMemo(() => ${originText}, [] /* TODO: add dependencies */)`,
+            ),
+          );
+          const importFix = ensureReactImport("useMemo", sourceCode, fixer);
+          if (importFix) fixes.push(importFix);
+          return fixes;
+        },
+      });
+    }
+
+    function reportUnstableObject(
+      originNode: TSESTree.Node,
+      scope: HookScope,
+    ): void {
+      context.report({
+        node: originNode,
+        messageId: "unstableObjectReturn",
+        data: { hookName: scope.name },
+        fix(fixer) {
+          const fixes: ReturnType<typeof fixer.replaceText>[] = [];
+          const originText = sourceCode.getText(originNode);
+          fixes.push(
+            fixer.replaceText(
+              originNode,
+              `useMemo(() => (${originText}), [] /* TODO: add dependencies */)`,
+            ),
+          );
+          const importFix = ensureReactImport("useMemo", sourceCode, fixer);
+          if (importFix) fixes.push(importFix);
+          return fixes;
+        },
+      });
+    }
+
     return {
       Program(node) {
         collectExportedHooks(node);
@@ -319,29 +371,41 @@ export const rule = createRule<[], MessageIds>({
         if (!scope || scope.nestedDepth > 0) return;
         if (!node.argument) return;
 
-        let returnObj: TSESTree.ObjectExpression | undefined;
-
-        if (node.argument.type === AST_NODE_TYPES.ObjectExpression) {
-          returnObj = node.argument;
-        } else if (node.argument.type === AST_NODE_TYPES.Identifier) {
-          // Trace through variables to find the object
-          const origin = scope.variables.get(node.argument.name);
-          if (
-            origin &&
-            origin.node.type === AST_NODE_TYPES.ObjectExpression
-          ) {
-            returnObj = origin.node;
-          } else if (origin && origin.kind === "object-literal") {
-            // The variable was classified as object-literal but the node might
-            // be the init which is an ObjectExpression
-            if (origin.node.type === AST_NODE_TYPES.ObjectExpression) {
-              returnObj = origin.node;
-            }
-          }
+        // --- Bare array returns ---
+        if (node.argument.type === AST_NODE_TYPES.ArrayExpression) {
+          reportUnstableArray(node.argument, scope);
+          return;
         }
 
-        if (returnObj) {
-          analyzeReturnProperties(returnObj.properties, scope);
+        // --- Bare object returns ---
+        if (node.argument.type === AST_NODE_TYPES.ObjectExpression) {
+          reportUnstableObject(node.argument, scope);
+          analyzeReturnProperties(node.argument.properties, scope);
+          return;
+        }
+
+        // --- Identifier returns: trace through variables ---
+        if (node.argument.type === AST_NODE_TYPES.Identifier) {
+          const origin = scope.variables.get(node.argument.name);
+          if (!origin) return;
+
+          // Identifier tracing to array-literal
+          if (origin.kind === "array-literal") {
+            reportUnstableArray(origin.node, scope);
+            return;
+          }
+
+          // Identifier tracing to stable-hook — no warning needed
+          if (origin.kind === "stable-hook") return;
+
+          // Identifier tracing to object-literal
+          if (origin.kind === "object-literal") {
+            reportUnstableObject(origin.node, scope);
+            if (origin.node.type === AST_NODE_TYPES.ObjectExpression) {
+              analyzeReturnProperties(origin.node.properties, scope);
+            }
+            return;
+          }
         }
       },
     };
