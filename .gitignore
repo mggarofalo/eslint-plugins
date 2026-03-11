@@ -15,7 +15,7 @@ dist/
 Thumbs.db
 
 # Claude
-.claude/worktrees/
+.claude/
 
 # npm
 *.tgz
