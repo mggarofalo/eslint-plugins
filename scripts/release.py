@@ -2,14 +2,17 @@
 """Release a package: bump version, commit, push, and create a GitHub release."""
 
 import json
+import platform
 import re
 import subprocess
 import sys
 from pathlib import Path
 
+_SHELL = platform.system() == "Windows"
+
 
 def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, check=True, text=True, **kwargs)
+    return subprocess.run(cmd, check=True, text=True, shell=_SHELL, **kwargs)
 
 
 def fatal(msg: str) -> None:
